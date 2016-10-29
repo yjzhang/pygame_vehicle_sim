@@ -46,6 +46,7 @@ class Vehicle(object):
         self.max_vel = 10.0
         self.noise = noise
         self.drag = drag
+        self.surface = self.create_display_surface()
 
     def state(self):
         """
@@ -82,13 +83,21 @@ class Vehicle(object):
         vehicle1_surface = pygame.Surface((50, 50))
         pygame.draw.ellipse(vehicle1_surface, (255,255,255),(0,0,50,50))
         pygame.draw.line(vehicle1_surface, (0,0,255),(25,25),(50,25))
+        self.surface = vehicle1_surface
         return vehicle1_surface
+
+    def draw(self, surface):
+        """
+        Draws the vehicle on a surface.
+        """
+        angle = np.degrees(self.heading)
+        s1 = pygame.transform.rotate(self.surface, angle)
+        surface.blit(s1, self.pos)
 
 def main():
     vehicle1 = Vehicle()
     vehicle1.pos = np.array([300.0,300.0])
     screen = pygame.display.set_mode((600,600))
-    vehicle1_surface = vehicle1.create_display_surface()
     while 1:
         control = []
         pygame.event.pump()
@@ -106,11 +115,7 @@ def main():
         #print control
         #print vehicle1.state()
         screen.fill((0,0,0))
-        angle = np.degrees(vehicle1.heading)
-        #print angle
-        s1 = pygame.transform.rotate(vehicle1_surface, angle)
-        screen.blit(s1, vehicle1.pos)
-        pygame.display.flip()
+        vehicle1.draw(screen)
 
 if __name__ == '__main__':
     main()

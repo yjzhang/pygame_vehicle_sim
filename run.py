@@ -36,14 +36,8 @@ if __name__ == '__main__':
         #print vehicle1.state()
         # display vehicle1
         screen.fill((0,0,0))
-        angle = np.degrees(vehicle1.heading)
-        #print angle
-        s1 = pygame.transform.rotate(vehicle1_surface, angle)
-        screen.blit(s1, vehicle1.pos)
-        # display vehicle2
-        angle2 = np.degrees(vehicle2.heading)
-        s2 = pygame.transform.rotate(vehicle2_surface, angle2)
-        screen.blit(s2, vehicle2.pos)
+        vehicle1.draw(screen)
+        vehicle2.draw(screen)
         pygame.display.flip()
         pygame.time.delay(15 - (pygame.time.get_ticks()-current_time))
 
