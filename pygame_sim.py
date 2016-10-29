@@ -1,4 +1,4 @@
-import pygame as pg
+import pygame
 import numpy as np
 
 CONTROL_ACC = set(['FWD', 'BACK'])
@@ -26,7 +26,7 @@ def update_pos(pos, heading, vel):
 
 class Vehicle(object):
 
-    def __init__(self, mass = 10.0, force=1.0, ang=0.01,
+    def __init__(self, mass = 25.0, force=1.0, ang=0.001,
             init_pos = np.array([0.0, 0.0]),
             noise = 0.0, drag=0.3):
         """
@@ -69,43 +69,48 @@ class Vehicle(object):
         else:
             self.vel = update_vel(self.vel, self.heading, 0.0,
                     self.mass, self.drag)
-
         if 'LEFT' in control:
             self.heading += self.ang
         elif 'RIGHT' in control:
             self.heading -= self.ang
         self.pos = update_pos(self.pos, self.heading, self.vel)
 
+    def create_display_surface(self):
+        """
+        Creates a pygame surface for displaying the vehicle.
+        """
+        vehicle1_surface = pygame.Surface((50, 50))
+        pygame.draw.ellipse(vehicle1_surface, (255,255,255),(0,0,50,50))
+        pygame.draw.line(vehicle1_surface, (0,0,255),(25,25),(50,25))
+        return vehicle1_surface
+
 def main():
     vehicle1 = Vehicle()
-    vehicle1.pos = np.array([250.0,250.0])
-    screen = pg.display.set_mode((500,500))
-    vehicle1_surface = pg.Surface((30, 30))
-    pg.draw.ellipse(vehicle1_surface, (255,255,255),(0,0,30,30))
-    pg.draw.line(vehicle1_surface, (0,0,255),(15,15),(30,15))
+    vehicle1.pos = np.array([300.0,300.0])
+    screen = pygame.display.set_mode((600,600))
+    vehicle1_surface = vehicle1.create_display_surface()
     while 1:
         control = []
-        pg.event.pump()
-        keys = pg.key.get_pressed()
+        pygame.event.pump()
+        keys = pygame.key.get_pressed()
         #print [i for i in keys if i>0]
-        if keys[pg.K_UP]:
+        if keys[pygame.K_UP]:
             control.append('FWD')
-        # flip left and right because ???
-        if keys[pg.K_LEFT]:
+        if keys[pygame.K_LEFT]:
             control.append('LEFT')
-        if keys[pg.K_DOWN]:
+        if keys[pygame.K_DOWN]:
             control.append('BACK')
-        if keys[pg.K_RIGHT]:
+        if keys[pygame.K_RIGHT]:
             control.append('RIGHT')
         vehicle1.update(control)
         #print control
         #print vehicle1.state()
         screen.fill((0,0,0))
         angle = np.degrees(vehicle1.heading)
-        print angle
-        s1 = pg.transform.rotate(vehicle1_surface, angle)
+        #print angle
+        s1 = pygame.transform.rotate(vehicle1_surface, angle)
         screen.blit(s1, vehicle1.pos)
-        pg.display.flip()
+        pygame.display.flip()
 
 if __name__ == '__main__':
     main()
