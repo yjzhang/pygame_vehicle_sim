@@ -51,8 +51,7 @@ class Vehicle(object):
     def state(self):
         """
         Returns the state of the vehicle:
-            x-position, y-position, heading, x-velocity, y-velocity,
-            angular velocity
+            x-position, y-position, heading, x-velocity, y-velocity
         """
         return np.array([self.pos[0], self.pos[1], self.heading, self.vel[0],
                 self.vel[1]])
