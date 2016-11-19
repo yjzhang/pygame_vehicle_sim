@@ -1,5 +1,6 @@
 from pygame_sim import Vehicle
-from vehicle_controller import VehicleController
+from vehicle_controller import VehicleController, UserController,\
+        BasicEvasionController
 import pygame
 import numpy as np
 
@@ -9,35 +10,26 @@ if __name__ == '__main__':
     vehicle1_surface = vehicle1.create_display_surface()
     vehicle2 = Vehicle(mass=5., ang=0.1)
     vehicle2_surface = vehicle2.create_display_surface()
-    controller = VehicleController(vehicle2)
+    v1_controller = UserController(vehicle1)
+    v2_controller = BasicEvasionController(vehicle2)
     vehicle1.pos = np.array([100.0,100.0])
     vehicle2.pos = np.array([600.0, 600.0])
     screen = pygame.display.set_mode((1000,1000))
     while 1:
         current_time = pygame.time.get_ticks()
         # update vehicle1 control (user)
-        control = []
-        pygame.event.pump()
-        keys = pygame.key.get_pressed()
-        #print [i for i in keys if i>0]
-        if keys[pygame.K_UP]:
-                        control.append('FWD')
-        if keys[pygame.K_LEFT]:
-                        control.append('LEFT')
-        if keys[pygame.K_DOWN]:
-                        control.append('BACK')
-        if keys[pygame.K_RIGHT]:
-                        control.append('RIGHT')
-        vehicle1.update(control)
+        v1_control = v1_controller.next_action()
+        vehicle1.update(v1_control)
         # update vehicle2 control (auto)
-        v2_control = controller.next_action()
+        state = (vehicle2.state(), vehicle1.state())
+        v2_control = v2_controller.next_action(state)
         vehicle2.update(v2_control)
         #print control
         #print vehicle1.state()
         # display vehicle1
         screen.fill((0,0,0))
-        vehicle1.draw(screen)
-        vehicle2.draw(screen)
+        vehicle1.draw(screen, main_pos=vehicle1.pos)
+        vehicle2.draw(screen, main_pos=vehicle1.pos)
         pygame.display.flip()
         pygame.time.delay(15 - (pygame.time.get_ticks()-current_time))
 

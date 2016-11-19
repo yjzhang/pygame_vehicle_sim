@@ -47,6 +47,7 @@ class Vehicle(object):
         self.noise = noise
         self.drag = drag
         self.surface = self.create_display_surface()
+        self.is_main = False
 
     def state(self):
         """
@@ -85,13 +86,17 @@ class Vehicle(object):
         self.surface = vehicle1_surface
         return vehicle1_surface
 
-    def draw(self, surface):
+    def draw(self, surface, main_pos = np.array([0,0])):
         """
         Draws the vehicle on a surface.
+        main_pos: the 'center' position of the surface.
         """
+        width, height = surface.get_size()
         angle = np.degrees(self.heading)
         s1 = pygame.transform.rotate(self.surface, angle)
-        surface.blit(s1, self.pos)
+        # center it...
+        new_pos = self.pos - main_pos + np.array([width/2, height/2])
+        surface.blit(s1, new_pos)
 
 def main():
     vehicle1 = Vehicle()

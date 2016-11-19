@@ -1,3 +1,4 @@
+from sklearn.linear_model import LogisticRegression
 
 class DaggerModel(object):
     """
@@ -26,7 +27,7 @@ class LinearDaggerModel(DaggerModel):
     """
 
     def __init__(self):
-        pass
+        self.log_reg = LogisticRegression()
 
     def train(self, dataset):
         pass
