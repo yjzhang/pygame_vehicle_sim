@@ -13,6 +13,33 @@ def normalize_angle(ang):
         ang = 2*np.pi + ang
     return ang%(2*np.pi)
 
+def action_to_vecs(action):
+    a1 = 0
+    if 'FWD' in action:
+        a1 = 1
+    elif 'BACK' in action:
+        a1 = 2
+    a2 = 0
+    if 'LEFT' in action:
+        a2 = 1
+    elif 'RIGHT' in action:
+        a2 = 2
+    return (a1, a2)
+
+def vecs_to_action(vecs):
+    a1 = vecs[0]
+    a2 = vecs[1]
+    action = []
+    if a1 == 1:
+        action.append('FWD')
+    elif a1 == 2:
+        action.append('BACK')
+    if a2 == 1:
+        action.append('LEFT')
+    elif a2 == 2:
+        action.append('RIGHT')
+    return action
+
 class VehicleController(object):
     """
     Basic class for a vehicle controller - target
@@ -83,7 +110,7 @@ class BasicEvasionController(VehicleController):
         pos_diff = [self_state[0]-other_state[0], self_state[1]-other_state[1]]
         heading_diff = normalize_angle(self_state[2]) - normalize_angle(other_state[2])
         # note: normalize heading_diff to be between pi and -pi
-        print heading_diff
+        # print heading_diff
         if heading_diff < 0 and np.abs(heading_diff) < np.pi/2:
             control.append('LEFT')
         elif heading_diff > 0 and heading_diff < np.pi/2:
@@ -102,7 +129,8 @@ class DaggerPursuitController(VehicleController):
         self.control_history = []
         self.state_history = []
         self.model = model
-        self.control = 'policy'
+        self.control = 'user'
+        self.round = 0
 
     def next_action(self, state=None):
         control = []
@@ -117,12 +145,23 @@ class DaggerPursuitController(VehicleController):
             control.append('BACK')
         if keys[pygame.K_RIGHT]:
             control.append('RIGHT')
+        state = np.concatenate((state[0], state[1]))
         self.state_history.append(state)
-        self.control_history.append(control)
+        self.control_history.append(action_to_vecs(control))
         if self.control=='policy':
-            return self.model.action(state)
+            return vecs_to_action(self.model.action(state))
         else:
             return control
+
+    def train(self):
+        """
+        Resets the round, trains using the new data
+        """
+        self.model.train(self.state_history, self.control_history)
+        self.control_history = []
+        self.state_history = []
+        self.round += 1
+
 
 class DaggerEvasionController(VehicleController):
     """

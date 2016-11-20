@@ -28,7 +28,7 @@ class Vehicle(object):
 
     def __init__(self, mass = 25.0, force=1.0, ang=0.001,
             init_pos = np.array([0.0, 0.0]),
-            noise = 0.0, drag=0.3):
+            noise = 0.0, drag=0.3, main=False):
         """
         Defines a new vehicle.
         noise is the variance of the noise distribution.
@@ -46,8 +46,8 @@ class Vehicle(object):
         self.max_vel = 10.0
         self.noise = noise
         self.drag = drag
-        self.surface = self.create_display_surface()
-        self.is_main = False
+        self.surface = self.create_display_surface(main)
+        self.is_main = main
 
     def state(self):
         """
@@ -76,12 +76,14 @@ class Vehicle(object):
             self.heading -= self.ang
         self.pos = update_pos(self.pos, self.heading, self.vel)
 
-    def create_display_surface(self):
+    def create_display_surface(self, main=False):
         """
         Creates a pygame surface for displaying the vehicle.
         """
         vehicle1_surface = pygame.Surface((50, 50))
         pygame.draw.ellipse(vehicle1_surface, (255,255,255),(0,0,50,50))
+        if main:
+            pygame.draw.ellipse(vehicle1_surface, (255,0,0),(0,0,50,50))
         pygame.draw.line(vehicle1_surface, (0,0,255),(25,25),(50,25))
         self.surface = vehicle1_surface
         return vehicle1_surface
@@ -97,6 +99,15 @@ class Vehicle(object):
         # center it...
         new_pos = self.pos - main_pos + np.array([width/2, height/2])
         surface.blit(s1, new_pos)
+
+    def detect_collision(self, other):
+        """
+        Detects collision with another vehicle.
+        """
+        # arbitary constant of 50 for the radius/distance
+        if np.sqrt(np.dot(self.pos-other.pos, self.pos-other.pos)) <= 50:
+            return True
+        return False
 
 def main():
     vehicle1 = Vehicle()
