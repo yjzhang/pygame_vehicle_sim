@@ -2,34 +2,38 @@ from pygame_sim import Vehicle
 from vehicle_controller import VehicleController, UserController,\
         BasicEvasionController, DaggerPursuitController
 import dagger
+import dagger_nn
 import pygame
 import numpy as np
 import random
 
 def reset_sim():
     vehicle1.pos = np.array([100.0,100.0])
-    vehicle2.pos = np.array([100.0+random.randint(-400, 400), 
+    vehicle2.pos = np.array([100.0+random.randint(-400, 400),
         100.0+random.randint(-400, 400)])
     v1_controller.train()
+    v1_controller.save()
     if random.random()<0.5:
         print 'policy'
-        v1_controller.control='policy'
+        v1_controller.control='policy_learn'
     else:
         print 'random'
         v1_controller.control='user'
 
 if __name__ == '__main__':
     # set time to 15ms/tick
-    pursuit_model = dagger.LinearDaggerModel()
+    pursuit_model = dagger_nn.NNDaggerModel()
     vehicle1 = Vehicle(mass=1., ang=0.1, main=True)
     vehicle2 = Vehicle(mass=5., ang=0.1)
     v1_controller = DaggerPursuitController(vehicle1, model=pursuit_model)
     v2_controller = BasicEvasionController(vehicle2)
     vehicle1.pos = np.array([100.0,100.0])
-    vehicle2.pos = np.array([100.0+random.randint(-400, 400), 
+    vehicle2.pos = np.array([100.0+random.randint(-400, 400),
         100.0+random.randint(-400, 400)])
     screen = pygame.display.set_mode((1000,1000))
     steps = 0
+    # results: 1 for success, 0 for failure
+    results = []
     while 1:
         current_time = pygame.time.get_ticks()
         # update vehicle1 control (user)
@@ -55,6 +59,6 @@ if __name__ == '__main__':
             reset_sim()
             steps = 0
         steps += 1
-        pygame.time.delay(15 - (pygame.time.get_ticks()-current_time))
+        pygame.time.delay(30 - (pygame.time.get_ticks()-current_time))
 
 

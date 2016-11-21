@@ -129,6 +129,7 @@ class DaggerPursuitController(VehicleController):
         self.control_history = []
         self.state_history = []
         self.model = model
+        # controls: 'policy_learn', 'user', 'policy'
         self.control = 'user'
         self.round = 0
 
@@ -147,10 +148,17 @@ class DaggerPursuitController(VehicleController):
             control.append('RIGHT')
         state = np.concatenate((state[0], state[1]))
         self.state_history.append(state)
-        self.control_history.append(action_to_vecs(control))
-        if self.control=='policy':
-            return vecs_to_action(self.model.action(state))
+        if self.control=='policy_learn':
+            action = vecs_to_action(self.model.action(state))
+            # basically, if no key is pressed then we're implicitly agreeing
+            # with the provided policy.
+            if control or keys[pygame.K_SPACE]:
+                self.control_history.append(action_to_vecs(control))
+            else:
+                self.control_history.append(action_to_vecs(action))
+            return action
         else:
+            self.control_history.append(action_to_vecs(control))
             return control
 
     def train(self):

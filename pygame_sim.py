@@ -24,6 +24,18 @@ def update_pos(pos, heading, vel):
     new_pos[1] = pos[1] + vel[1]
     return new_pos
 
+def minimize_angle(ang):
+    """
+    Compress the value of an agle to be between pi and -pi
+    """
+    ang = ang%(2*np.pi)
+    if ang > np.pi:
+        ang = 2*np.pi - ang
+    if ang < -np.pi:
+        ang = 2*np.pi + ang
+    return ang%(2*np.pi)
+
+
 class Vehicle(object):
 
     def __init__(self, mass = 25.0, force=1.0, ang=0.001,
@@ -54,7 +66,8 @@ class Vehicle(object):
         Returns the state of the vehicle:
             x-position, y-position, heading, x-velocity, y-velocity
         """
-        return np.array([self.pos[0], self.pos[1], self.heading, self.vel[0],
+        return np.array([self.pos[0], self.pos[1],
+                minimize_angle(self.heading), self.vel[0],
                 self.vel[1]])
 
     def update(self, control):
