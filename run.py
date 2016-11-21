@@ -8,16 +8,17 @@ import numpy as np
 import random
 
 def reset_sim():
+    print iterations
     vehicle1.pos = np.array([100.0,100.0])
     vehicle2.pos = np.array([100.0+random.randint(-400, 400),
         100.0+random.randint(-400, 400)])
     v1_controller.train()
-    v1_controller.save()
+    v1_controller.model.save()
     if random.random()<0.5:
-        print 'policy'
+        print 'policy control (learning)'
         v1_controller.control='policy_learn'
     else:
-        print 'random'
+        print 'user control'
         v1_controller.control='user'
 
 if __name__ == '__main__':
@@ -31,6 +32,7 @@ if __name__ == '__main__':
     vehicle2.pos = np.array([100.0+random.randint(-400, 400),
         100.0+random.randint(-400, 400)])
     screen = pygame.display.set_mode((1000,1000))
+    iterations = 0
     steps = 0
     # results: 1 for success, 0 for failure
     results = []
@@ -52,12 +54,21 @@ if __name__ == '__main__':
         vehicle2.draw(screen, main_pos=vehicle1.pos)
         pygame.display.flip()
         if vehicle1.detect_collision(vehicle2):
+            iterations += 1
+            if v1_controller.control=='policy' \
+                    or v1_controller.control=='policy_learn':
+                results.append(1)
             print 'collision'
             reset_sim()
             steps = 0
         if steps>=500:
+            iterations += 1
+            if v1_controller.control=='policy' \
+                    or v1_controller.control=='policy_learn':
+                results.append(0)
             reset_sim()
             steps = 0
+            print 'failed'
         steps += 1
         pygame.time.delay(30 - (pygame.time.get_ticks()-current_time))
 

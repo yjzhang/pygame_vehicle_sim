@@ -68,7 +68,7 @@ class NNDaggerModel(DaggerModel):
 
     def save(self, file_prefix='nn_dagger'):
         model_json = self.model1.to_json()
-        with open(file_prefix+'_model.json') as f:
+        with open(file_prefix+'_model.json', 'w') as f:
             f.write(model_json)
         self.model1.save_weights(file_prefix+'_weights.h5')
 

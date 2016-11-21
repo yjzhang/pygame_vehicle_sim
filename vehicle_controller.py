@@ -130,6 +130,7 @@ class DaggerPursuitController(VehicleController):
         self.state_history = []
         self.model = model
         # controls: 'policy_learn', 'user', 'policy'
+        # 'policy' doesn't do any learning
         self.control = 'user'
         self.round = 0
 
@@ -156,6 +157,9 @@ class DaggerPursuitController(VehicleController):
                 self.control_history.append(action_to_vecs(control))
             else:
                 self.control_history.append(action_to_vecs(action))
+            return action
+        elif self.control=='policy':
+            action = vecs_to_action(self.model.action(state))
             return action
         else:
             self.control_history.append(action_to_vecs(control))
