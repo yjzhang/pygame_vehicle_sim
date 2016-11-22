@@ -12,14 +12,6 @@ def reset_sim():
     vehicle1.pos = np.array([100.0,100.0])
     vehicle2.pos = np.array([100.0+random.randint(-400, 400),
         100.0+random.randint(-400, 400)])
-    v1_controller.train()
-    v1_controller.model.save()
-    if random.random()<0.5:
-        print 'policy control (learning)'
-        v1_controller.control='policy_learn'
-    else:
-        print 'user control'
-        v1_controller.control='user'
 
 if __name__ == '__main__':
     # set time to 15ms/tick
@@ -28,6 +20,7 @@ if __name__ == '__main__':
     vehicle1 = Vehicle(mass=1., ang=0.1, main=True)
     vehicle2 = Vehicle(mass=5., ang=0.1)
     v1_controller = DaggerPursuitController(vehicle1, model=pursuit_model)
+    v1_controller.control = 'policy'
     v2_controller = BasicEvasionController(vehicle2)
     vehicle1.pos = np.array([100.0,100.0])
     vehicle2.pos = np.array([100.0+random.randint(-400, 400),
@@ -38,6 +31,8 @@ if __name__ == '__main__':
     # results: 1 for success, 0 for failure
     results = []
     while 1:
+        pygame.image.save(screen,
+                '/home/yjzhang/Grad_School/course_data/cse571_data/img_{0:03d}_{1:03d}.jpg'.format(iterations, steps))
         current_time = pygame.time.get_ticks()
         # update vehicle1 control (user)
         state = (vehicle1.state(), vehicle2.state())
