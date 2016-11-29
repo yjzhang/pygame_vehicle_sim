@@ -70,6 +70,12 @@ class Vehicle(object):
                 minimize_angle(self.heading), self.vel[0],
                 self.vel[1]])
 
+    def update_hypothetical(self, control):
+        """
+        Does a hypothetical update without actually changing the vehicle's
+        state.
+        """
+
     def update(self, control):
         """
         Updates the vehicle state
@@ -104,14 +110,21 @@ class Vehicle(object):
     def draw(self, surface, main_pos = np.array([0,0])):
         """
         Draws the vehicle on a surface.
-        main_pos: the 'center' position of the surface.
+        main_pos: the 'center' position of the surface. For example, if the
+        surface is always centered at a specific object, then it's the position
+        of that object.
         """
         width, height = surface.get_size()
+        rect = self.surface.get_rect()
         angle = np.degrees(self.heading)
-        s1 = pygame.transform.rotate(self.surface, angle)
+        new_img = pygame.transform.rotate(self.surface, angle)
+        rot_rect = rect.copy()
+        rot_rect.center = new_img.get_rect().center
         # center it...
+        new_img = new_img.subsurface(rot_rect).copy()
         new_pos = self.pos - main_pos + np.array([width/2, height/2])
-        surface.blit(s1, new_pos)
+        # TODO: make rotation work better...
+        surface.blit(new_img, new_pos)
 
     def detect_collision(self, other):
         """

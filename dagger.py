@@ -15,7 +15,7 @@ class DaggerModel(object):
         """
         pass
 
-    def action(self, state):
+    def action(self, state, prev_action=None):
         """
         Given a current state, gives the next action.
         """
@@ -48,7 +48,7 @@ class LinearDaggerModel(DaggerModel):
         self.movement.fit(states, actions1)
         self.turn.fit(states, actions2)
 
-    def action(self, state):
+    def action(self, state, prev_action=None):
         m = self.movement.predict(state)
         t = self.turn.predict(state)
         return (m, t)

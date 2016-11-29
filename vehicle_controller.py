@@ -126,7 +126,12 @@ class DaggerPursuitController(VehicleController):
     def __init__(self, vehicle, model=None):
         self.vehicle = vehicle
         self.prev_action = 'FWD'
+        # what's the difference between control and action history?
+        # well, control history is always the user inputs if there is a user 
+        # input, while action history
+        # is always the actions taken. Sometimes they are one and the same.
         self.control_history = []
+        self.action_history = []
         self.state_history = []
         self.model = model
         # controls: 'policy_learn', 'user', 'policy'
@@ -150,30 +155,39 @@ class DaggerPursuitController(VehicleController):
         state = np.concatenate((state[0], state[1]))
         if self.control=='policy_learn':
             self.state_history.append(state)
-            action = vecs_to_action(self.model.action(state))
+            action = vecs_to_action(self.model.action(state,
+                action_to_vecs(self.prev_action)))
+            self.prev_action = action
             # basically, if no key is pressed then we're implicitly agreeing
             # with the provided policy.
             if control or keys[pygame.K_SPACE]:
                 self.control_history.append(action_to_vecs(control))
             else:
                 self.control_history.append(action_to_vecs(action))
+            self.action_history.append(action_to_vecs(action))
             return action
         elif self.control=='policy':
-            action = vecs_to_action(self.model.action(state))
+            action = vecs_to_action(self.model.action(state,
+                action_to_vecs(self.prev_action)))
+            self.prev_action = action
             return action
         else:
             if control:
                 self.state_history.append(state)
                 self.control_history.append(action_to_vecs(control))
+            self.prev_action = control
+            self.action_history.append(action_to_vecs(control))
             return control
 
     def train(self):
         """
         Resets the round, trains using the new data
         """
-        self.model.train(self.state_history, self.control_history)
+        self.model.train(self.state_history, self.control_history,
+                self.action_history)
         self.control_history = []
         self.state_history = []
+        self.action_history = []
         self.round += 1
 
 
@@ -206,6 +220,55 @@ class DaggerEvasionController(VehicleController):
         self.state_history.append(state)
         self.control_history.append(control)
         if self.control=='policy':
-            return self.model.action(state)
+            action =  self.model.action(state,
+                    action_to_vecs(self.prev_action))
+            self.prev_action = action
+            return action
         else:
+            self.prev_action = control
             return control
+
+class RLController(VehicleController):
+    """
+    Reinforcement learning controller...
+    Basically just a wrapper around a RL model
+    """
+
+    def __init__(self, vehicle, model=None):
+        self.vehicle = vehicle
+        self.model = model
+        self.state_history = []
+        self.control_history = []
+        self.reward_history = []
+
+    def reward(self, state, k=100.0):
+        """
+        Reward function for the pursuit model.
+
+        Reward function is k/distance - 1.
+        """
+        p1 = state[0:2]
+        p2 = state[5:7]
+        dist = np.sqrt(np.dot(p2-p1, p2-p1))
+        return k/dist - 1.0
+
+    def next_action(self, state=None):
+        """
+        Just get the action from the model.
+        """
+        current_reward = self.reward(state)
+        self.reward_history.append(current_reward)
+        action = self.model.action(state)
+        self.state_history.append(state)
+        self.control_history.append(action)
+        return action
+
+    def train(self):
+        """
+        Train the Deep-Q learner
+        """
+        self.model.train(self.state_history, self.control_history,
+                self.reward_history)
+        self.state_history = []
+        self.control_history = []
+        self.reward_history = []

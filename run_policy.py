@@ -13,10 +13,12 @@ def reset_sim():
     vehicle2.pos = np.array([100.0+random.randint(-400, 400),
         100.0+random.randint(-400, 400)])
 
+model = 'nn_dagger_lookback'
+
 if __name__ == '__main__':
     # set time to 15ms/tick
-    pursuit_model = dagger_nn.NNDaggerModel()
-    pursuit_model.load()
+    pursuit_model = dagger_nn.NNDaggerLookbackModel()
+    pursuit_model.load(file_prefix=model)
     vehicle1 = Vehicle(mass=1., ang=0.1, main=True)
     vehicle2 = Vehicle(mass=5., ang=0.1)
     v1_controller = DaggerPursuitController(vehicle1, model=pursuit_model)
@@ -31,8 +33,8 @@ if __name__ == '__main__':
     # results: 1 for success, 0 for failure
     results = []
     while 1:
-        pygame.image.save(screen,
-                '/home/yjzhang/Grad_School/course_data/cse571_data/img_{0:03d}_{1:03d}.jpg'.format(iterations, steps))
+        #pygame.image.save(screen,
+        #        '/home/yjzhang/Grad_School/course_data/cse571_data/img_{0:03d}_{1:03d}.jpg'.format(iterations, steps))
         current_time = pygame.time.get_ticks()
         # update vehicle1 control (user)
         state = (vehicle1.state(), vehicle2.state())
@@ -67,5 +69,8 @@ if __name__ == '__main__':
             print 'failed'
         steps += 1
         pygame.time.delay(30 - (pygame.time.get_ticks()-current_time))
+        with open(model + '_policy_results.txt', 'w') as f:
+            f.write('successes: ' + str(sum(results)) + '\n')
+            f.write('total runs: ' + str(iterations) + '\n')
 
 
