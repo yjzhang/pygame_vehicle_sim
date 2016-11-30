@@ -13,11 +13,13 @@ def reset_sim():
     vehicle2.pos = np.array([100.0+random.randint(-400, 400),
         100.0+random.randint(-400, 400)])
 
-model = 'nn_dagger_lookback'
+model = 'nn_expert_lookback'
 
 if __name__ == '__main__':
     # set time to 15ms/tick
     pursuit_model = dagger_nn.NNDaggerLookbackModel()
+    if 'lookback' not in model:
+        pursuit_model = dagger_nn.NNDaggerModel()
     pursuit_model.load(file_prefix=model)
     vehicle1 = Vehicle(mass=1., ang=0.1, main=True)
     vehicle2 = Vehicle(mass=5., ang=0.1)

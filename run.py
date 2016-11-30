@@ -9,7 +9,7 @@ import random
 
 # TODO: compare different learning algorithms/systems
 # types: dagger, expert, deepq
-run_type = 'dagger_lookback'
+run_type = 'expert_lookback'
 epsilon=0.5
 
 def reset_sim():
@@ -26,12 +26,14 @@ def reset_sim():
         else:
             print 'user control'
             v1_controller.control='user'
-    elif run_type=='expert':
+    elif 'expert' in run_type:
         v1_controller.control='user'
 
 if __name__ == '__main__':
     # set time to 15ms/tick
     pursuit_model = dagger_nn.NNDaggerLookbackModel()
+    if 'lookback' not in run_type:
+        pursuit_model = dagger_nn.NNDaggerModel()
     #pursuit_model.load()
     vehicle1 = Vehicle(mass=1., ang=0.1, main=True)
     vehicle2 = Vehicle(mass=5., ang=0.1)
