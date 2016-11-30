@@ -1,2 +1,0 @@
-successes: 87
-total runs: 100
